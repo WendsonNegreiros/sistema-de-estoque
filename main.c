@@ -2,77 +2,89 @@
 #include <stdlib.h>
 #include "produto.h"
 #include "hash.h"
+#include "abb.h"
+
+int cadastrar_produto(Hash * h, ABB * a, int codigo, char * nome, float preco, int quantidade){
+    if(h == NULL || a == NULL || nome == NULL)
+        return 0;
+
+    if(buscar_hash(h, codigo) != NULL || buscar_abb(a, nome) != NULL)
+        return 0;
+
+    Produto * p = criar_produto(codigo, nome, preco, quantidade);
+
+    if(p == NULL)
+        return 0;
+
+    if(!inserir_hash(h, p)){
+        free(p);
+        return 0;
+    }
+
+    if(!inserir_abb(a, p)){
+        remover_hash(h, codigo);
+        free(p);
+        return 0;
+    }
+
+    return 1;
+}
+
+int atualizar_quantidade(Hash* h, int codigo, int nova_quantidade){
+    if(h == NULL || nova_quantidade < 0)
+        return 0;
+
+    Produto* p = buscar_hash(h, codigo);
+
+    if(p == NULL)
+        return 0;
+
+    p->quantidade = nova_quantidade;
+
+    return 1;
+}
 
 int main(){
     Hash* h = criar_hash();
+    ABB* a = criar_abb();
 
-    if(h == NULL){
-        puts("Erro ao criar a tabela");
-        return 1;
-    }
-
-    Produto* p1 = criar_produto(101, "Macarrao", 4.90, 60);
-    Produto* p2 = criar_produto(202, "Produto Teste", 9.90, 5);
-
-    if(p1 == NULL || p2 == NULL){
-        puts("Erro ao criar produtos");
+    if(h == NULL || a == NULL){
+        puts("Erro ao criar estruturas");
         destruir_hash(h);
-        free(p1);
-        free(p2);
+        destruir_abb(a);
         return 1;
     }
 
-    if(!inserir_hash(h, p1) || !inserir_hash(h, p2)){
-        puts("Erro ao inserir produtos na hash");
+    if(!cadastrar_produto(h, a, 101, "Macarrao", 4.90, 60)){
+        puts("Erro ao cadastrar produto");
         destruir_hash(h);
-        free(p1);
-        free(p2);
+        destruir_abb(a);
         return 1;
     }
 
-    Produto* encontrado = buscar_hash(h, 101);
+    Produto* p1 = buscar_hash(h, 101);
+    Produto* p2 = buscar_abb(a, "Macarrao");
 
-    if(encontrado != NULL)
-        printf("Encontrado: %d - %s\n", encontrado->codigo, encontrado->nome);
+    if(p1 != NULL && p1 == p2)
+        puts("Hash e ABB apontam para o mesmo produto");
     else
-        puts("Produto 101 nao encontrado");
+        puts("Erro na integracao");
+    
+    printf("\nQuantidade antes: %d\n", p1->quantidade);
 
-    encontrado = buscar_hash(h, 202);
-
-    if(encontrado != NULL)
-        printf("Encontrado: %d - %s\n", encontrado->codigo, encontrado->nome);
+    if(atualizar_quantidade(h, 101, 100))
+        puts("Quantidade atualizada com sucesso");
     else
-        puts("Produto 202 nao encontrado");
+        puts("Erro ao atualizar quantidade");
 
-    encontrado = buscar_hash(h, 999);
-
-    if(encontrado == NULL)
-        puts("Produto 999 nao encontrado");
-
-    if(remover_hash(h, 101))
-        puts("Produto 101 removido com sucesso");
-    else
-        puts("Erro ao remover produto 101");
-    if(remover_hash(h, 303))
-        puts("Produto 303 removido");
-    else
-        puts("Produto 303 nao encontrado");
-
-    if(buscar_hash(h, 202) != NULL)
-        puts("Produto 202 permanece cadastrado");
-    Produto* teste = buscar_hash(h, 101);
-
-    if(teste == NULL)
-        puts("Produto 101 nao esta mais na Hash");
-
-    teste = buscar_hash(h, 202);
+    Produto* teste = buscar_abb(a, "Macarrao");
 
     if(teste != NULL)
-        puts("Produto 202 continua cadastrado");
+        printf("Quantidade na ABB: %d\n", teste->quantidade);
 
     destruir_hash(h);
+    destruir_abb(a);
     free(p1);
-    free(p2);
 
     return 0;
 }

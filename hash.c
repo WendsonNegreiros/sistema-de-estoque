@@ -95,6 +95,7 @@ int remover_hash(Hash * h, int codigo){
         anterior = atual;
         atual = atual->prox;
     }
+    return 0;
 }
 
 void destruir_hash(Hash * h){

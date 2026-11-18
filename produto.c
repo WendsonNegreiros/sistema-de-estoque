@@ -7,11 +7,11 @@ Produto* criar_produto(int codigo, char* nome, float preco, int qnt){
         return NULL;
 
     Produto* p = malloc(sizeof(Produto));    
-    if(p != NULL)
+    if(p != NULL){
         p->codigo = codigo;
         strcpy(p->nome, nome);
         p->preco = preco;
         p->quantidade = qnt;
-
+    }
     return p;
 }
