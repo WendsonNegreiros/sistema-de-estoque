@@ -3,45 +3,20 @@
 #include "produto.h"
 #include "hash.h"
 #include "abb.h"
+#include "estoque.h"
 
-int cadastrar_produto(Hash * h, ABB * a, int codigo, char * nome, float preco, int quantidade){
-    if(h == NULL || a == NULL || nome == NULL)
-        return 0;
-
-    if(buscar_hash(h, codigo) != NULL || buscar_abb(a, nome) != NULL)
-        return 0;
-
-    Produto * p = criar_produto(codigo, nome, preco, quantidade);
-
-    if(p == NULL)
-        return 0;
-
-    if(!inserir_hash(h, p)){
-        free(p);
-        return 0;
-    }
-
-    if(!inserir_abb(a, p)){
-        remover_hash(h, codigo);
-        free(p);
-        return 0;
-    }
-
-    return 1;
-}
-
-int atualizar_quantidade(Hash* h, int codigo, int nova_quantidade){
-    if(h == NULL || nova_quantidade < 0)
-        return 0;
-
-    Produto* p = buscar_hash(h, codigo);
-
-    if(p == NULL)
-        return 0;
-
-    p->quantidade = nova_quantidade;
-
-    return 1;
+void exibir_menu(void){
+    printf("\n===== SISTEMA DE ESTOQUE =====\n");
+    printf("1 - Cadastrar produto\n");
+    printf("2 - Consultar produto por codigo\n");
+    printf("3 - Consultar produto por nome\n");
+    printf("4 - Atualizar quantidade em estoque\n");
+    printf("5 - Alterar preco\n");
+    printf("6 - Remover produto\n");
+    printf("7 - Listar produtos em ordem alfabetica\n");
+    printf("8 - Exibir estatisticas\n");
+    printf("0 - Encerrar\n");
+    printf("Escolha uma opcao: ");
 }
 
 int main(){
@@ -55,36 +30,272 @@ int main(){
         return 1;
     }
 
-    if(!cadastrar_produto(h, a, 101, "Macarrao", 4.90, 60)){
-        puts("Erro ao cadastrar produto");
-        destruir_hash(h);
-        destruir_abb(a);
-        return 1;
-    }
+    int opcao;
+    int c;
 
-    Produto* p1 = buscar_hash(h, 101);
-    Produto* p2 = buscar_abb(a, "Macarrao");
+    do {
+        exibir_menu();
 
-    if(p1 != NULL && p1 == p2)
-        puts("Hash e ABB apontam para o mesmo produto");
-    else
-        puts("Erro na integracao");
-    
-    printf("\nQuantidade antes: %d\n", p1->quantidade);
+        if(scanf("%d", &opcao) != 1){
+            if(feof(stdin))
+                break;
 
-    if(atualizar_quantidade(h, 101, 100))
-        puts("Quantidade atualizada com sucesso");
-    else
-        puts("Erro ao atualizar quantidade");
+            puts("Entrada invalida");
 
-    Produto* teste = buscar_abb(a, "Macarrao");
+            while((c = getchar()) != '\n' && c != EOF);
 
-    if(teste != NULL)
-        printf("Quantidade na ABB: %d\n", teste->quantidade);
+            continue;
+        }
+
+        while((c = getchar()) != '\n' && c != EOF);
+
+        switch(opcao){
+            case 0:
+                puts("Encerrando o programa...");
+                break;
+
+            case 1: {
+            int codigo, quantidade;
+                float preco;
+                char nome[50];
+
+                printf("Digite o codigo: ");
+                if(scanf("%d", &codigo) != 1){
+                    puts("Codigo invalido!");
+                    break;
+                }
+
+                printf("Digite o nome: ");
+                if(scanf(" %49[^\n]", nome) != 1){
+                    puts("Nome invalido!");
+                    break;
+                }
+
+                printf("Digite o preco: ");
+                if(scanf("%f", &preco) != 1){
+                    puts("Preco invalido!");
+                    break;
+                }
+
+                printf("Digite a quantidade: ");
+                if(scanf("%d", &quantidade) != 1){
+                    puts("Quantidade invalida!");
+                    break;
+                }
+
+                if(cadastrar_produto(h, a, codigo, nome, preco, quantidade))
+                    puts("Produto cadastrado com sucesso!");
+                else
+                    puts("Erro ao cadastrar produto!");
+
+                break;
+            }
+
+            case 2: {
+                int codigo;
+
+                printf("Digite o codigo do produto: ");
+
+                if(scanf("%d", &codigo) != 1){
+                    puts("Codigo invalido!");
+
+                    while((c = getchar()) != '\n' && c != EOF);
+
+                    break;
+                }
+
+                while((c = getchar()) != '\n' && c != EOF);
+
+                Produto* p = buscar_hash(h, codigo);
+
+                if(p != NULL){
+                    printf("\nCodigo: %d\n", p->codigo);
+                    printf("Nome: %s\n", p->nome);
+                    printf("Preco: R$ %.2f\n", p->preco);
+                    printf("Quantidade: %d\n", p->quantidade);
+                }
+                else{
+                    puts("Produto nao encontrado!");
+                }
+
+                break;
+            }
+            case 3: {
+                char nome[50];
+
+                printf("Digite o nome do produto: ");
+
+                if(scanf(" %49[^\n]", nome) != 1){
+                    puts("Nome invalido!");
+
+                    while((c = getchar()) != '\n' && c != EOF);
+
+                    break;
+                }
+
+                while((c = getchar()) != '\n' && c != EOF);
+
+                Produto* p = buscar_abb(a, nome);
+
+                if(p != NULL){
+                    printf("\nCodigo: %d\n", p->codigo);
+                    printf("Nome: %s\n", p->nome);
+                    printf("Preco: R$ %.2f\n", p->preco);
+                    printf("Quantidade: %d\n", p->quantidade);
+                }
+                else{
+                    puts("Produto nao encontrado!");
+                }
+
+                break;
+            }
+            case 4: {
+                int codigo, quantidade;
+
+                printf("Digite o codigo do produto: ");
+
+                if(scanf("%d", &codigo) != 1){
+                    puts("Codigo invalido!");
+
+                    while((c = getchar()) != '\n' && c != EOF);
+
+                    break;
+                }
+
+                while((c = getchar()) != '\n' && c != EOF);
+
+                Produto* p = buscar_hash(h, codigo);
+
+                if(p == NULL){
+                    puts("Produto nao encontrado!");
+                    break;
+                }
+
+                printf("Produto: %s\n", p->nome);
+                printf("Quantidade atual: %d\n", p->quantidade);
+
+                printf("Digite a nova quantidade: ");
+
+                if(scanf("%d", &quantidade) != 1){
+                    puts("Quantidade invalida!");
+
+                    while((c = getchar()) != '\n' && c != EOF);
+
+                    break;
+                }
+
+                while((c = getchar()) != '\n' && c != EOF);
+
+                if(atualizar_quantidade(h, codigo, quantidade))
+                    puts("Quantidade atualizada com sucesso!");
+                else
+                    puts("Erro ao atualizar quantidade!");
+
+                break;
+            }
+            case 5: {
+                int codigo;
+                float preco;
+
+                printf("Digite o codigo do produto: ");
+
+                if(scanf("%d", &codigo) != 1){
+                    puts("Codigo invalido!");
+
+                    while((c = getchar()) != '\n' && c != EOF);
+
+                    break;
+                }
+
+                while((c = getchar()) != '\n' && c != EOF);
+
+                Produto* p = buscar_hash(h, codigo);
+
+                if(p == NULL){
+                    puts("Produto nao encontrado!");
+                    break;
+                }
+
+                printf("Produto: %s\n", p->nome);
+                printf("Preco atual: R$ %.2f\n", p->preco);
+
+                printf("Digite o novo preco: ");
+
+                if(scanf("%f", &preco) != 1){
+                    puts("Preco invalido!");
+
+                    while((c = getchar()) != '\n' && c != EOF);
+
+                    break;
+                }
+
+                while((c = getchar()) != '\n' && c != EOF);
+
+                if(alterar_preco(h, codigo, preco))
+                    puts("Preco alterado com sucesso!");
+                else
+                    puts("Erro ao alterar preco!");
+
+                break;
+            }
+            case 6: {
+                int codigo;
+
+                printf("Digite o codigo do produto que deseja remover: ");
+
+                if(scanf("%d", &codigo) != 1){
+                    puts("Codigo invalido!");
+
+                    while((c = getchar()) != '\n' && c != EOF);
+
+                    break;
+                }
+
+                while((c = getchar()) != '\n' && c != EOF);
+
+                Produto* p = buscar_hash(h, codigo);
+
+                if(p == NULL){
+                    puts("Produto nao encontrado!");
+                    break;
+                }
+
+                printf("Produto encontrado: %s\n", p->nome);
+
+                if(remover_produto(h, a, codigo))
+                    puts("Produto removido com sucesso!");
+                else
+                    puts("Erro ao remover produto!");
+
+                break;
+            }
+            case 7: {
+                printf("\n===== PRODUTOS EM ORDEM ALFABETICA =====\n");
+
+                listar_abb(a);
+
+                break;
+            }
+            case 8: {
+                int total_produtos;
+                int total_unidades;
+
+                calcular_estatisticas(h, &total_produtos, &total_unidades);
+
+                printf("\n===== ESTATISTICAS DO ESTOQUE =====\n");
+                printf("Produtos cadastrados: %d\n", total_produtos);
+                printf("Total de unidades: %d\n", total_unidades);
+
+                break;
+            }
+            default:
+                puts("Opcao invalida!");
+        }
+
+    } while(opcao != 0);
 
     destruir_hash(h);
     destruir_abb(a);
-    free(p1);
 
     return 0;
 }

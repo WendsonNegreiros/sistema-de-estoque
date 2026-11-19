@@ -3,7 +3,7 @@
 #include <string.h>
 
 Produto* criar_produto(int codigo, char* nome, float preco, int qnt){
-    if (codigo <= 0 || preco < 0.0 || qnt < 0 || strcmp(nome, "") == 0 || strlen(nome) > 50)
+    if (codigo <= 0 || preco <= 0.0 || qnt < 0 || strcmp(nome, "") == 0 || strlen(nome) > 50)
         return NULL;
 
     Produto* p = malloc(sizeof(Produto));    

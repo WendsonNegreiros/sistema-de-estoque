@@ -113,3 +113,25 @@ void destruir_hash(Hash * h){
     }
     free(h);
 }
+
+void calcular_estatisticas(Hash* h, int* total_produtos, int* total_unidades){
+    if(total_produtos == NULL || total_unidades == NULL)
+        return;
+
+    *total_produtos = 0;
+    *total_unidades = 0;
+
+    if(h == NULL)
+        return;
+
+    for(int i = 0; i < TAM; i++){
+        No* atual = h->tabela[i];
+
+        while(atual != NULL){
+            (*total_produtos)++;
+            *total_unidades += atual->produto->quantidade;
+
+            atual = atual->prox;
+        }
+    }
+}
